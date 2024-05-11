@@ -1,3 +1,4 @@
+/*
 #include <sql.h>
 #include <sqlext.h>
 #include <iostream>
@@ -132,3 +133,4 @@ int main() {
 
     return 0;
 }
+*/
