@@ -387,6 +387,19 @@ public:
             cout << i + 1 << ". " << cities[i].getName() << endl;
         }
     }
+	void supprimerVille(vector<City>& cities) {
+		afficherVilles(cities);
+		int index;
+		cout << "Entrez l'index de la ville à supprimer: ";
+		cin >> index;
+		if (index >= 0 && index < cities.size()) {
+			cities.erase(cities.begin() + index);
+			cout << "Ville supprimee avec succes." << endl;
+		}
+		else {
+			cout << "Index de ville invalide." << endl;
+		}
+	}   
 
     // Method to add a new flight
     void addFlight(vector<Flight>& flights) {
@@ -599,7 +612,21 @@ int main() {
                     cin >> choixAdmin;
                     switch (choixAdmin) {
                     case 1:
-                        admin->creerVille(cities);
+                        int chois_ville;
+						cout << "1. Ajouter les ville" << endl;
+						cout << "2. Modifier une ville" << endl;
+						cout << "3. Supprimer une ville" << endl;
+						cin >> chois_ville;
+                        switch (chois_ville) {
+						case 1:
+							admin->creerVille(cities);
+							break;
+						case 2:
+							admin->afficherVilles(cities);
+							break;
+						case 3:
+							 admin->supprimerVille(cities);
+                        }
                         break;
                     case 2:
                          //admin->creerAeroport(airports);
@@ -608,7 +635,7 @@ int main() {
                         // admin->creerAvion(aircrafts);
                         break;
                     case 4:
-                         admin->creerVille(cities);
+                        // remplir
                         break;
                     case 5:
                         Admin::displayAdmins(admins);
