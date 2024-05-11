@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include <iomanip>
+
 using namespace std;
 
 // Reservation class
@@ -384,21 +384,12 @@ public:
     }
 
     void afficherVilles(vector<City>& cities) {
-        // Vérifier si des villes sont disponibles
-        if (cities.empty()) {
-            cout << "Aucune ville disponible." << endl;
-            return;
-        }
-
-        // Afficher les villes existantes sous forme de tableau centré
+        // Afficher les villes existantes
         cout << "Villes disponibles:" << endl;
-        cout << setw(10) << "Index" << setw(20) << "Nom de la ville" << endl;
-        cout << setfill('-') << setw(30) << "" << setfill(' ') << endl; // Ligne de séparation
         for (int i = 0; i < cities.size(); ++i) {
-            cout << setw(10) << i + 1 << setw(20) << cities[i].getName() << endl;
+            cout << i + 1 << ". " << cities[i].getName() << endl;
         }
     }
-
 	void supprimerVille(vector<City>& cities) {
 		afficherVilles(cities);
 		int index;
@@ -629,7 +620,10 @@ int main() {
                     switch (choixAdmin) {
                     case 1:
                         int chois_ville;
-						cout << "1. Ajouter les ville | 2. Modifier une ville | 3. Supprimer une ville | 4.afficher villes" <<endl;
+						cout << "1. Ajouter les ville" << endl;
+						cout << "2. Modifier une ville" << endl;
+						cout << "3. Supprimer une ville" << endl;
+                        cout<<"afficher villes"<<endl;
 						cin >> chois_ville;
                         switch (chois_ville) {
 						case 1:
