@@ -1,80 +1,134 @@
-#include <iostream>
-#include <sqlext.h>
-#include <sqltypes.h>
 #include <sql.h>
-#include <vector>
+#include <sqlext.h>
+#include <iostream>
 #include <string>
 
-// Handle ODBC pour environnement et connexion
-SQLHENV env; // Handle d'environnement
-SQLHDBC dbc; // Handle de connexion
+using namespace std;
 
-// Fonction pour se connecter à SQL Server via ODBC
-void connecterSQLServer() {
-    // Allocation des handles ODBC
-    SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &env);
+// Constante pour la chaîne de connexion à la base de données
+const wstring CONNECTION_STRING = L"DRIVER={SQL Server};SERVER=DESKTOP-977PH46\\SQLEXPRESS;DATABASE=NomDeVotreBaseDeDonnees;Trusted_Connection=Yes;";
+
+// Fonction pour établir une connexion avec la base de données
+SQLHDBC connecterBDD() {
+    SQLHENV env;
+    SQLHDBC dbc;
+    SQLRETURN ret;
+
+    // Allouer un handle d'environnement
+    ret = SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &env);
+    if (!SQL_SUCCEEDED(ret)) {
+        cerr << "Erreur d'allocation de l'environnement." << endl;
+        return NULL;
+    }
+
     SQLSetEnvAttr(env, SQL_ATTR_ODBC_VERSION, (void*)SQL_OV_ODBC3, 0);
-    SQLAllocHandle(SQL_HANDLE_DBC, env, &dbc);
 
-    // Chaîne de connexion à SQL Server
-    SQLWCHAR connectionString[] = L"DRIVER={SQL Server};SERVER=DESKTOP-977PH46\\SQLEXPRESS;DATABASE=projet_poo;Integrated Security=True;Trust Server Certificate=True;";
-
-    // Connexion au serveur SQL Server
-    SQLRETURN ret = SQLDriverConnect(dbc, NULL, connectionString, SQL_NTS, NULL, 0, NULL, SQL_DRIVER_NOPROMPT);
-
-    if (SQL_SUCCEEDED(ret)) {
-        std::cout << "Connexion réussie à SQL Server." << std::endl;
+    // Allouer un handle de connexion
+    ret = SQLAllocHandle(SQL_HANDLE_DBC, env, &dbc);
+    if (!SQL_SUCCEEDED(ret)) {
+        cerr << "Erreur d'allocation de la connexion." << endl;
+        SQLFreeHandle(SQL_HANDLE_ENV, env);
+        return NULL;
     }
-    else {
-        std::cout << "Connexion échouée à SQL Server." << std::endl;
-        exit(1); // Quitter en cas d'échec de connexion
+
+    // Établir la connexion
+    ret = SQLDriverConnectW(dbc, NULL, (SQLWCHAR*)CONNECTION_STRING.c_str(), SQL_NTS, NULL, 0, NULL, SQL_DRIVER_COMPLETE);
+    if (!SQL_SUCCEEDED(ret)) {
+        cerr << "Erreur de connexion à la base de données." << endl;
+        SQLFreeHandle(SQL_HANDLE_DBC, dbc);
+        SQLFreeHandle(SQL_HANDLE_ENV, env);
+        return NULL;
     }
+
+    return dbc;
 }
 
-// Fonction pour exécuter une requête SQL et afficher les résultats
-void afficherAdministrateurs() {
-    SQLHSTMT stmt; // Handle pour la requête SQL
-    SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
+// Fonction pour déconnecter la base de données
+void deconnecterBDD(SQLHDBC dbc) {
+    SQLDisconnect(dbc);
+    SQLFreeHandle(SQL_HANDLE_DBC, dbc);
+}
 
-    // Requête SQL pour obtenir la liste des administrateurs
-    std::wstring requete = L"SELECT id, nom, password FROM Admin;";
+class Admin {
+public:
+    int id;
+    wstring nom;
+    wstring password;
 
-    // Exécution de la requête SQL
-    SQLRETURN ret = SQLExecDirect(stmt, (SQLWCHAR*)requete.c_str(), SQL_NTS);
+    // Méthode statique pour ajouter un administrateur en utilisant la procédure stockée
+    static void ajouter(const wstring& nom, const wstring& password) {
+        // Se connecter à la base de données
+        SQLHDBC dbc = connecterBDD();
+        if (!dbc) return;
 
-    if (SQL_SUCCEEDED(ret)) {
-        SQLINTEGER id;
-        SQLWCHAR nom[100], password[100];
-        SQLLEN idLen, nomLen, passwordLen;
+        // Allouer un handle de commande
+        SQLHSTMT stmt;
+        SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
 
-        std::cout << "Liste des Administrateurs:" << std::endl;
+        // Préparer l'appel à la procédure stockée
+        const wstring query = L"EXEC GestionAdmin 'Ajouter', NULL, '" + nom + L"', '" + password + L"'";
 
-        // Boucle pour récupérer et afficher les données
-        while (SQLFetch(stmt) == SQL_SUCCESS) {
-            SQLGetData(stmt, 1, SQL_C_SLONG, &id, 0, &idLen); // Récupérer l'ID
-            SQLGetData(stmt, 2, SQL_C_WCHAR, nom, sizeof(nom), &nomLen); // Récupérer le nom
-            SQLGetData(stmt, 3, SQL_C_WCHAR, password, sizeof(password), &passwordLen); // Récupérer le mot de passe
-
-            std::wcout << "ID: " << id << ", Nom: " << nom << ", Mot de passe: " << password << std::endl;
+        // Exécuter la commande
+        SQLRETURN ret = SQLExecDirectW(stmt, (SQLWCHAR*)query.c_str(), SQL_NTS);
+        if (!SQL_SUCCEEDED(ret)) {
+            cerr << "Erreur lors de l'exécution de la procédure stockée." << endl;
         }
-    }
-    else {
-        std::cout << "Erreur lors de l'exécution de la requête SQL." << std::endl;
+
+        // Libérer les handles
+        SQLFreeHandle(SQL_HANDLE_STMT, stmt);
+        deconnecterBDD(dbc);
     }
 
-    // Libérer le handle de la requête
-    SQLFreeHandle(SQL_HANDLE_STMT, stmt);
-}
+    // Méthode statique pour vérifier les informations de connexion de l'administrateur
+    static bool login(const wstring& nom, const wstring& password) {
+        // Se connecter à la base de données
+        SQLHDBC dbc = connecterBDD();
+        if (!dbc) return false;
+
+        // Allouer un handle de commande
+        SQLHSTMT stmt;
+        SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
+
+        // Préparer l'appel à la procédure stockée
+        const wstring query = L"EXEC GestionAdmin 'Login', NULL, '" + nom + L"', '" + password + L"'";
+
+        // Exécuter la commande
+        SQLRETURN ret = SQLExecDirectW(stmt, (SQLWCHAR*)query.c_str(), SQL_NTS);
+        if (!SQL_SUCCEEDED(ret)) {
+            cerr << "Erreur lors de l'exécution de la procédure stockée." << endl;
+            return false;
+        }
+
+        // Récupérer les résultats et vérifier le résultat de connexion
+        SQLCHAR colData[256];
+        SQLLEN colDataLength;
+        if (SQL_SUCCEEDED(SQLFetch(stmt))) {
+            SQLGetData(stmt, 1, SQL_C_CHAR, colData, sizeof(colData), &colDataLength);
+            colData[colDataLength] = 0;
+            bool resultat = (wstring(colData) == L"True");
+            SQLFreeHandle(SQL_HANDLE_STMT, stmt);
+            deconnecterBDD(dbc);
+            return resultat;
+        }
+
+        // Libérer les handles
+        SQLFreeHandle(SQL_HANDLE_STMT, stmt);
+        deconnecterBDD(dbc);
+        return false;
+    }
+};
 
 int main() {
-    connecterSQLServer(); // Se connsecter à SQL Server
+    // Ajout d'un administrateur
+    Admin::ajouter(L"AdminTest", L"PasswordTest");
 
-    // Appeler la fonction pour afficher les administrateurs
-    afficherAdministrateurs();
-
-    // Libérer les ressources ODBC
-    SQLFreeHandle(SQL_HANDLE_DBC, dbc);
-    SQLFreeHandle(SQL_HANDLE_ENV, env);
+    // Connexion de l'administrateur
+    if (Admin::login(L"AdminTest", L"PasswordTest")) {
+        cout << "Connexion réussie." << endl;
+    }
+    else {
+        cout << "Erreur de connexion." << endl;
+    }
 
     return 0;
 }
