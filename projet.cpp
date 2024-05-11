@@ -336,22 +336,20 @@ private:
 
 public:
     Admin(const string& u, const string& p) : nom(u), password(p) {}
-    string getnom() const {
+    string getNom() const {
 		return nom;
 	}
     string getPassword() const {
 		return password;
     }
-    static bool connecter(string username, string password, const vector<Admin>& admins) {
-        // Vérifier les identifiants dans le vecteur admins
-        for (const auto& admin : admins) {
-            if (admin.getnom() == username && admin.getPassword() == password) {
-                return true; // Identifiants valides
+    static Admin* connecter(string username, string password, vector<Admin>& admins) {
+        for (auto& admin : admins) {
+            if (admin.getNom() == username && admin.getPassword() == password) {
+                return &admin; // Retourne un pointeur vers l'admin trouvé
             }
         }
-        return false; // Identifiants invalides
+        return nullptr; // Connexion échouée
     }
-
     // cree admin
     static void createAdmin(vector<Admin>& admins) {
         string username, password;
@@ -367,15 +365,16 @@ public:
     static void displayAdmins(const vector<Admin>& admins) {
         cout << "Comptes administrateurs disponibles :" << endl;
         for (const auto& admin : admins) {
-            cout << "Nom d'utilisateur: " << admin.getnom() << endl;
+            cout << "Nom d'utilisateur: " << admin.getNom() << endl;
             // Vous pouvez ajouter d'autres détails si nécessaire
         }
     }
 
-
-
     // CRUD pour les villes
-    void creerVille(vector<City>& cities, string name) {
+    void creerVille(vector<City>& cities) {
+		string name;
+		cout << "Entrez le nom de la ville: ";
+		cin >> name;
         // Créer une nouvelle ville et l'ajouter à la liste
         cities.push_back(City(name));
         cout << "Ville ajoutee avec succes." << endl;
@@ -511,14 +510,15 @@ void displayAdminMenu() {
 
 // Fonction pour afficher le menu de l'administrateur
 void afficherMenuAdmin() {
-    cout << "Menu Admin:" << endl;
-    cout << "1. CRUD Villes" << endl;
-    cout << "2. CRUD Aeroports" << endl;
-    cout << "3. CRUD Avions" << endl;
-    cout << "4. CRUD Vols" << endl;
-    cout << "5. Quitter" << endl;
-    cout << "Votre choix: ";
+    cout << "Menu Administrateur:" << endl;
+    cout << "1. Gérer les villes" << endl;
+    cout << "2. Gérer les aéroports" << endl;
+    cout << "3. Gérer les avions" << endl;
+    cout << "4. Gérer les vols" << endl;
+    cout << "5. Afficher les admins" << endl;
+    cout << "6. Déconnexion" << endl;
 }
+
 
 // Fonction pour afficher le menu du client
 void afficherMenuClient() {
@@ -530,6 +530,35 @@ void afficherMenuClient() {
     cout << "5. Quitter" << endl;
     cout << "Votre choix: ";
 }
+void fillCities(vector<City>& cities) {
+    cities.push_back(City("Paris"));
+    cities.push_back(City("New York"));
+    cities.push_back(City("Tokyo"));
+}
+
+void fillAirports(vector<Airport>& airports, const vector<City>& cities) {
+    airports.push_back(Airport("Charles de Gaulle", 0)); // Supposons que Paris est à l'index 0 dans le vecteur des villes
+    airports.push_back(Airport("JFK Airport", 1)); // Supposons que New York est à l'index 1 dans le vecteur des villes
+    airports.push_back(Airport("Narita International Airport", 2)); // Supposons que Tokyo est à l'index 2 dans le vecteur des villes
+}
+
+void fillAircrafts(vector<Aircraft>& aircrafts) {
+    aircrafts.push_back(Aircraft("Boeing 747", 400)); // Avion avec une capacité de 400 passagers
+    aircrafts.push_back(Aircraft("Airbus A320", 180)); // Avion avec une capacité de 180 passagers
+}
+
+void fillFlights(vector<Flight>& flights, const vector<Airport>& airports) {
+    flights.push_back(Flight("Lundi", "09:00", "Mardi", "12:00", 200, 0, 1, 500)); // Vol de Paris à New York
+    flights.push_back(Flight("Mercredi", "10:00", "Jeudi", "13:00", 150, 1, 2, 600)); // Vol de New York à Tokyo
+}
+
+void fillAdmins(vector<Admin>& admins) {
+    // Vous pouvez créer des administrateurs en utilisant la méthode statique createAdmin ou en les créant directement
+    admins.push_back(Admin("admin1", "password1"));
+    admins.push_back(Admin("admin2", "password2"));
+}
+
+
 int main() {
     // Initialiser les données
     vector<City> cities;
@@ -538,8 +567,13 @@ int main() {
     vector<Flight> flights;
 	vector<Client> clients;
 	vector<Admin> admins;
-	vector<Admin> admins;
-    // Créer une instance de l'administrateur
+    // Créer une instance 
+    fillCities(cities);
+    fillAirports(airports,cities);
+	fillAircrafts(aircrafts);
+	fillFlights(flights, airports);
+	fillAdmins(admins);
+
     
 
     int choixPrincipal;
@@ -549,49 +583,51 @@ int main() {
         cin >> choixPrincipal;
 
         switch (choixPrincipal) {
-        case 1: { // Admin
+
+        case 1: {
             string username, password;
             cout << "Nom d'utilisateur: ";
             cin >> username;
             cout << "Mot de passe: ";
             cin >> password;
 
-            // Vérifier les identifiants de l'administrateur
-            if (Admin::connecter(username, password, admins)) {
-                int choixAdmin;
+            Admin* admin = Admin::connecter(username, password, admins);
+            if (admin != nullptr) {
+                int choixAdmin = 0;
                 do {
-                    // Afficher le menu de l'administrateur
                     afficherMenuAdmin();
                     cin >> choixAdmin;
-
                     switch (choixAdmin) {
                     case 1:
-                        // CRUD Villes
-                        // Demander à l'administrateur de choisir l'action (créer, afficher, modifier, supprimer)
+                        admin->creerVille(cities);
                         break;
                     case 2:
-                        // CRUD Aeroports
+                         //admin->creerAeroport(airports);
                         break;
                     case 3:
-                        // CRUD Avions
+                        // admin->creerAvion(aircrafts);
                         break;
                     case 4:
-                        // CRUD Vols
+                         admin->creerVille(cities);
                         break;
                     case 5:
-                        // Quitter
+                        Admin::displayAdmins(admins);
+                        break;
+                    case 6:
+                        cout << "Déconnexion réussie." << endl;
+                        choixAdmin = 0; // Pour sortir de la boucle
                         break;
                     default:
-                        cout << "Choix invalide. Veuillez reessayer." << endl;
-                        break;
+                        cout << "Option invalide. Veuillez réessayer." << endl;
                     }
-                } while (choixAdmin != 5);
+                } while (choixAdmin != 0);
             }
             else {
-                cout << "Identifiants invalides. Connexion echouee." << endl;
+                cout << "Identifiants incorrects, veuillez réessayer." << endl;
             }
             break;
         }
+        
         case 2: { // Client
             int choixClient;
             cout << "Choisissez une option :" << endl;
