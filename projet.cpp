@@ -162,6 +162,7 @@ public:
             cout << "Airport " << airportIndices[i] + 1 << endl; // Airport indexing starts from 1
         }
     }
+	string getName() { return name; }
 };
 
 // Client class
@@ -179,6 +180,70 @@ public:
 
     Client(int clientId, string clientFirstName, string clientLastName, string clientPassword, string clientEmail)
         : id(clientId), firstName(clientFirstName), lastName(clientLastName), password(clientPassword), email(clientEmail) {}
+
+    string getEmail() const {
+        return email;
+    }
+
+    // Fonction pour obtenir le mot de passe du client
+    string getPassword() const {
+        return password;
+    }
+    static bool login_client(string enteredEmail, string enteredPassword, const vector<Client>& clients) {
+        // Parcourir la liste des utilisateurs pour vérifier les identifiants
+        for (const auto& client : clients) {
+            if (client.email == enteredEmail && client.password == enteredPassword) {
+                return true; // Identifiants valides
+            }
+        }
+        return false; // Identifiants invalides
+    }
+    // Fonction pour créer un nouveau client
+    static void create_client(vector<Client>& clients) {
+        int id;
+        string firstName, lastName, password, email;
+
+        // Demander les informations du nouveau client à l'utilisateur
+        cout << "Enter client ID: ";
+        cin >> id;
+        cout << "Enter client first name: ";
+        cin >> firstName;
+        cout << "Enter client last name: ";
+        cin >> lastName;
+        cout << "Enter client email: ";
+        cin >> email;
+        cout << "Enter client password: ";
+        cin >> password;
+
+        // Créer un nouveau client avec les informations fournies
+        Client newClient(id, firstName, lastName, password, email);
+
+        // Ajouter le nouveau client au vecteur clients
+        clients.push_back(newClient);
+
+        cout << "Client created successfully." << endl;
+    }
+
+	// Method to handle client actions
+    void handleActions(vector<Flight>& flights) {
+        int action;
+        cout << "Choisissez une action :" << endl;
+        cout << "1. Effectuer une réservation" << endl;
+        cout << "2. Voir les réservations existantes" << endl;
+        cout << "Votre choix: ";
+        cin >> action;
+        switch (action) {
+        case 1:
+            makeReservation(flights);
+            break;
+        case 2:
+            displayReservations();
+            break;
+        default:
+            cout << "Choix invalide." << endl;
+            break;
+        }
+    }
 
     // Method to create a reservation
     void createReservation(string date, double price, int flightIndex) {
@@ -264,7 +329,66 @@ public:
 
 // Admin class
 class Admin {
+private:
+    int id;
+    string nom;
+	string password;
+
 public:
+    Admin(const string& u, const string& p) : nom(u), password(p) {}
+    string getnom() const {
+		return nom;
+	}
+    string getPassword() const {
+		return password;
+    }
+    static bool connecter(string username, string password, const vector<Admin>& admins) {
+        // Vérifier les identifiants dans le vecteur admins
+        for (const auto& admin : admins) {
+            if (admin.getnom() == username && admin.getPassword() == password) {
+                return true; // Identifiants valides
+            }
+        }
+        return false; // Identifiants invalides
+    }
+
+    // cree admin
+    static void createAdmin(vector<Admin>& admins) {
+        string username, password;
+        cout << "Entrez le nom d'utilisateur: ";
+        cin >> username;
+        cout << "Entrez le mot de passe: ";
+        cin >> password;
+        admins.push_back(Admin(username, password));
+        cout << "Compte administrateur créé avec succès." << endl;
+    }
+
+    // Méthode pour afficher les comptes administrateurs disponibles
+    static void displayAdmins(const vector<Admin>& admins) {
+        cout << "Comptes administrateurs disponibles :" << endl;
+        for (const auto& admin : admins) {
+            cout << "Nom d'utilisateur: " << admin.getnom() << endl;
+            // Vous pouvez ajouter d'autres détails si nécessaire
+        }
+    }
+
+
+
+    // CRUD pour les villes
+    void creerVille(vector<City>& cities, string name) {
+        // Créer une nouvelle ville et l'ajouter à la liste
+        cities.push_back(City(name));
+        cout << "Ville ajoutee avec succes." << endl;
+    }
+
+    void afficherVilles(vector<City>& cities) {
+        // Afficher les villes existantes
+        cout << "Villes disponibles:" << endl;
+        for (int i = 0; i < cities.size(); ++i) {
+            cout << i + 1 << ". " << cities[i].getName() << endl;
+        }
+    }
+
     // Method to add a new flight
     void addFlight(vector<Flight>& flights) {
         string depDay, depTime, arrDay, arrTime;
@@ -367,7 +491,7 @@ public:
 };
 
 // Main Menu function
-void displayMainMenu() {
+void afficherMenuPrincipal() {
     cout << "Bienvenue!" << endl;
     cout << "Choisissez une option:" << endl;
     cout << "1. Admin" << endl;
@@ -385,95 +509,129 @@ void displayAdminMenu() {
     cout << "Votre choix: ";
 }
 
+// Fonction pour afficher le menu de l'administrateur
+void afficherMenuAdmin() {
+    cout << "Menu Admin:" << endl;
+    cout << "1. CRUD Villes" << endl;
+    cout << "2. CRUD Aeroports" << endl;
+    cout << "3. CRUD Avions" << endl;
+    cout << "4. CRUD Vols" << endl;
+    cout << "5. Quitter" << endl;
+    cout << "Votre choix: ";
+}
 
-
+// Fonction pour afficher le menu du client
+void afficherMenuClient() {
+    cout << "Menu Client:" << endl;
+    cout << "1. Se connecter" << endl;
+    cout << "2. Creer un compte" << endl;
+    cout << "3. Voir les reservations disponibles" << endl;
+    cout << "4. Voir mes reservations" << endl;
+    cout << "5. Quitter" << endl;
+    cout << "Votre choix: ";
+}
 int main() {
-    // Initialize your data structures and objects
+    // Initialiser les données
+    vector<City> cities;
+    vector<Airport> airports;
+    vector<Aircraft> aircrafts;
     vector<Flight> flights;
-    Admin admin;
-    Client client;
+	vector<Client> clients;
+	vector<Admin> admins;
+	vector<Admin> admins;
+    // Créer une instance de l'administrateur
+    
 
-    int mainChoice;
+    int choixPrincipal;
     do {
-        // Display main menu
-        displayMainMenu();
-        cin >> mainChoice;
+        // Afficher le menu principal
+        afficherMenuPrincipal();
+        cin >> choixPrincipal;
 
-        switch (mainChoice) {
+        switch (choixPrincipal) {
         case 1: { // Admin
-            int adminChoice;
-            do {
-                // Display admin menu
-                displayAdminMenu();
-                cin >> adminChoice;
-                switch (adminChoice) {
-                case 1:
-                    // Add a new flight
-                    admin.addFlight(flights); // Call the addFlight method of the Admin class
-                    break;
-                case 2:
-                    admin.displayFlights(flights);
-                    cout << "Enter the index of the flight to modify: ";
-                    int indexToModify;
-                    cin >> indexToModify;
-                    admin.modifyFlight(flights, indexToModify);
+            string username, password;
+            cout << "Nom d'utilisateur: ";
+            cin >> username;
+            cout << "Mot de passe: ";
+            cin >> password;
 
-                    break;
-                case 3:
-                    admin.displayFlights(flights);
-                    break;
-                case 4:
-                    // Cancel
-                    break;
-                default:
-                    cout << "Choix invalide. Veuillez reessayer." << endl;
-                    break;
-                }
-            } while (adminChoice != 4);
+            // Vérifier les identifiants de l'administrateur
+            if (Admin::connecter(username, password, admins)) {
+                int choixAdmin;
+                do {
+                    // Afficher le menu de l'administrateur
+                    afficherMenuAdmin();
+                    cin >> choixAdmin;
+
+                    switch (choixAdmin) {
+                    case 1:
+                        // CRUD Villes
+                        // Demander à l'administrateur de choisir l'action (créer, afficher, modifier, supprimer)
+                        break;
+                    case 2:
+                        // CRUD Aeroports
+                        break;
+                    case 3:
+                        // CRUD Avions
+                        break;
+                    case 4:
+                        // CRUD Vols
+                        break;
+                    case 5:
+                        // Quitter
+                        break;
+                    default:
+                        cout << "Choix invalide. Veuillez reessayer." << endl;
+                        break;
+                    }
+                } while (choixAdmin != 5);
+            }
+            else {
+                cout << "Identifiants invalides. Connexion echouee." << endl;
+            }
             break;
         }
         case 2: { // Client
-            int clientChoice;
-            do {
-                // Display client menu
-                cout << "Menu Client:" << endl;
-                cout << "1. Faire une reservation" << endl;
-                cout << "2. Modifier une reservation" << endl;
-                cout << "3. Afficher les details de la reservation" << endl;
-                cout << "4. Quitter" << endl;
-                cout << "Votre choix: ";
-                cin >> clientChoice;
+            int choixClient;
+            cout << "Choisissez une option :" << endl;
+            cout << "1. Se connecter" << endl;
+            cout << "2. Créer un compte" << endl;
+            cout << "Votre choix: ";
+            cin >> choixClient;
 
-                // Process client choice
-                switch (clientChoice) {
-                case 1:
-                    // Make a reservation
-                    client.makeReservation(flights);
-                    break;
-                case 2:
-                    // Modify a reservation
-                    // ModifyReservation logic
-                    break;
-                case 3:
-                    // Display reservation details
-                    // DisplayReservationDetails logic
-                    break;
-                case 4:
-                    // Quit
-                    cout << "Au revoir!" << endl;
-                    break;
-                default:
-                    cout << "Choix invalide. Veuillez reessayer." << endl;
-                    break;
+            switch (choixClient) {
+            case 1: {
+                // Se connecter
+                string enteredEmail, enteredPassword;
+                cout << "Entrez votre email: ";
+                cin >> enteredEmail;
+                cout << "Entrez votre mot de passe: ";
+                cin >> enteredPassword;
+                for (auto& client : clients) {
+                    if (client.getEmail() == enteredEmail && client.getPassword() == enteredPassword) {
+                        cout << "Connexion réussie." << endl;
+                        // Gérer les actions du client connecté
+                        client.handleActions(flights);
+                        return 0; // Sortir du programme après traitement
+                    }
                 }
-            } while (clientChoice != 4);
-            break;
+                cout << "Identifiants incorrects. Connexion échouée." << endl;
+				break;
+			}
+            case 2: {
+                // Créer un compte
+                Client::create_client(clients);
+                // Gérer les actions du client créé
+                clients.back().handleActions(flights);
+                break;
+            }
+            default:
+                cout << "Choix invalide. Veuillez réessayer." << endl;
+                break;
+            }
         }
-        default:
-            cout << "Choix invalide. Veuillez reessayer." << endl;
-            break;
         }
-    } while (mainChoice != 0);
-
-    return 0;
+	} while (choixPrincipal != 3);
+   return 0;
 }
