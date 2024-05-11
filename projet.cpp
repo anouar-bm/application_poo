@@ -52,11 +52,12 @@ private:
     bool isOpenForReservation;
     int departureAirportIndex; // Index of the departure airport
     int arrivalAirportIndex;   // Index of the arrival airport
+	double price;
 
 public:
-    Flight(string depDay, string depTime, string arrDay, string arrTime, int seats, int depAirportIndex, int arrAirportIndex)
+    Flight(string depDay, string depTime, string arrDay, string arrTime, int seats, int depAirportIndex, int arrAirportIndex,double price)
         : departureDay(depDay), departureTime(depTime), arrivalDay(arrDay), arrivalTime(arrTime), availableSeats(seats), isOpenForReservation(false),
-        departureAirportIndex(depAirportIndex), arrivalAirportIndex(arrAirportIndex) {}
+        departureAirportIndex(depAirportIndex), arrivalAirportIndex(arrAirportIndex),price(price) {}
 
     // Getter methods
     string getDepartureDay() { return departureDay; }
@@ -67,6 +68,7 @@ public:
     bool isOpen() { return isOpenForReservation; }
     int getDepartureAirportIndex() { return departureAirportIndex; }
     int getArrivalAirportIndex() { return arrivalAirportIndex; }
+	double getPrice() { return price; }
 
     void setDepartureDay(string depDay) { departureDay = depDay; }
     void setDepartureTime(string depTime) { departureTime = depTime; }
@@ -74,6 +76,7 @@ public:
     void setArrivalTime(string arrTime) { arrivalTime = arrTime; }
     void setAvailableSeats(int seats) { availableSeats = seats; }
     void setOpen(bool open) { isOpenForReservation = open; }
+	void setPrice(double price) { price = price; }
 
     // Method to open flight for reservation
     void openForReservation() {
@@ -286,7 +289,7 @@ public:
         cin >> price;
 
         // Create the flight and add it to the vector
-        Flight newFlight(depDay, depTime, arrDay, arrTime, availableSeats, depAirportIndex, arrAirportIndex);
+        Flight newFlight(depDay, depTime, arrDay, arrTime, availableSeats, depAirportIndex, arrAirportIndex,price);
         flights.push_back(newFlight);
 
         cout << "Vol ajoute avec succes." << endl;
