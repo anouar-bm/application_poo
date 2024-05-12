@@ -129,6 +129,10 @@ public:
 
     // Getter method for city index
     int getCityIndex() { return cityIndex; }
+
+    string getName() const {
+        return name;
+    }
 };
 
 // City class
@@ -190,7 +194,7 @@ public:
         return password;
     }
     static bool login_client(string enteredEmail, string enteredPassword, const vector<Client>& clients) {
-        // Parcourir la liste des utilisateurs pour vérifier les identifiants
+        // Parcourir la liste des utilisateurs pour verifier les identifiants
         for (const auto& client : clients) {
             if (client.email == enteredEmail && client.password == enteredPassword) {
                 return true; // Identifiants valides
@@ -228,8 +232,8 @@ public:
     void handleActions(vector<Flight>& flights) {
         int action;
         cout << "Choisissez une action :" << endl;
-        cout << "1. Effectuer une réservation" << endl;
-        cout << "2. Voir les réservations existantes" << endl;
+        cout << "1. Effectuer une reservation" << endl;
+        cout << "2. Voir les reservations existantes" << endl;
         cout << "Votre choix: ";
         cin >> action;
         switch (action) {
@@ -310,22 +314,25 @@ public:
             // Get the selected flight
             Flight selectedFlight = flights[flightIndex];
 
-            // Prompt the user to enter the date of the reservation
-            string reservationDate;
-            cout << "Entrez la date de votre reservation (JJ/MM/AAAA): ";
-            cin >> reservationDate;
+            if (selectedFlight.isOpen()) {
 
-            // Calculate the price based on the chosen cities
+                // Prompt the user to enter the date of the reservation
+                string reservationDate;
+                cout << "Entrez la date de votre reservation (JJ/MM/AAAA): ";
+                cin >> reservationDate;
 
+                // Calculate the price based on the chosen cities
 
-            // Output the reservation details
-            cout << "Votre reservation pour le vol de " << selectedFlight.getDepartureDay() << " à " << selectedFlight.getDepartureTime() << " à " << selectedFlight.getArrivalDay() << " à " << selectedFlight.getArrivalTime() << " a ete confirmee pour le " << reservationDate << " au prix de " << endl;
+                createReservation(reservationDate, selectedFlight.getPrice(), flightIndex);
+
+                // Output the reservation details
+                cout << "Votre reservation pour le vol de " << selectedFlight.getDepartureDay() << " a " << selectedFlight.getDepartureTime() << " a " << selectedFlight.getArrivalDay() << " a " << selectedFlight.getArrivalTime() << " a ete confirmee pour le " << reservationDate << endl;
+            }
+            else {
+                cout << "Vol non trouve." << endl;
+            }
         }
-        else {
-            cout << "Vol non trouve." << endl;
-        }
-    }
-};
+    };
 
 // Admin class
 class Admin {
@@ -353,19 +360,19 @@ public:
     // cree admin
     static void createAdmin(vector<Admin>& admins) {
         string username, password;
-        cout << "Entrez le nom d'utilisateur: ";
+        cout << "Entrez le nom d'Admin: ";
         cin >> username;
         cout << "Entrez le mot de passe: ";
         cin >> password;
         admins.push_back(Admin(username, password));
-        cout << "Compte administrateur créé avec succès." << endl;
+        cout << "Compte administrateur cree avec succes." << endl;
     }
 
     // Méthode pour afficher les comptes administrateurs disponibles
     static void displayAdmins(const vector<Admin>& admins) {
         cout << "Comptes administrateurs disponibles :" << endl;
         for (const auto& admin : admins) {
-            cout << "Nom d'utilisateur: " << admin.getNom() << endl;
+            cout << "Nom d'Admin: " << admin.getNom() << endl;
             // Vous pouvez ajouter d'autres détails si nécessaire
         }
     }
@@ -442,6 +449,19 @@ public:
         }
     }
 
+    void creerAvion(vector<Aircraft>& aircrafts) {
+        string model;
+        int capacity;
+        cout << "Entrez le modele de l'avion : ";
+        cin >> model;
+        cout << "Entrez la capacite de l'avion : ";
+        cin >> capacity;
+        aircrafts.push_back(Aircraft(model, capacity));
+        cout << "Nouvel avion ajoute avec succes." << endl;
+    }
+
+
+
     void modifyFlight(vector<Flight>& flights, int index) {
         if (index >= 0 && index < flights.size()) {
             Flight& flight = flights[index];
@@ -508,7 +528,8 @@ void afficherMenuPrincipal() {
     cout << "Choisissez une option:" << endl;
     cout << "1. Admin" << endl;
     cout << "2. Client" << endl;
-    cout << "Votre choix: ";
+    cout << "Votre choix: "<<endl;
+    cout<<"------------------------------------"<<endl;
 }
 
 // Admin Menu function
@@ -524,12 +545,14 @@ void displayAdminMenu() {
 // Fonction pour afficher le menu de l'administrateur
 void afficherMenuAdmin() {
     cout << "Menu Administrateur:" << endl;
-    cout << "1. Gérer les villes" << endl;
-    cout << "2. Gérer les aéroports" << endl;
-    cout << "3. Gérer les avions" << endl;
-    cout << "4. Gérer les vols" << endl;
+    cout << "1. Gerer les villes" << endl;
+    cout << "2. Gerer les aeroports" << endl;
+    cout << "3. Gerer les avions" << endl;
+    cout << "4. Gerer les vols" << endl;
     cout << "5. Afficher les admins" << endl;
-    cout << "6. Déconnexion" << endl;
+    cout << "6. Deconnexion" << endl;
+    cout << ". --------------------------------" << endl;
+
 }
 
 
@@ -550,9 +573,9 @@ void fillCities(vector<City>& cities) {
 }
 
 void fillAirports(vector<Airport>& airports, const vector<City>& cities) {
-    airports.push_back(Airport("Charles de Gaulle", 0)); // Supposons que Paris est à l'index 0 dans le vecteur des villes
-    airports.push_back(Airport("JFK Airport", 1)); // Supposons que New York est à l'index 1 dans le vecteur des villes
-    airports.push_back(Airport("Narita International Airport", 2)); // Supposons que Tokyo est à l'index 2 dans le vecteur des villes
+    airports.push_back(Airport("Charles de Gaulle \n", 0)); // Supposons que Paris est à l'index 0 dans le vecteur des villes
+    airports.push_back(Airport("JFK Airport \n", 1)); // Supposons que New York est à l'index 1 dans le vecteur des villes
+    airports.push_back(Airport("Narita International Airport \n", 2)); // Supposons que Tokyo est à l'index 2 dans le vecteur des villes
 }
 
 void fillAircrafts(vector<Aircraft>& aircrafts) {
@@ -568,7 +591,9 @@ void fillFlights(vector<Flight>& flights, const vector<Airport>& airports) {
 void fillAdmins(vector<Admin>& admins) {
     // Vous pouvez créer des administrateurs en utilisant la méthode statique createAdmin ou en les créant directement
     admins.push_back(Admin("admin1", "password1"));
+    cout << "-----------------" << endl;
     admins.push_back(Admin("admin2", "password2"));
+    cout << "-----------------" << endl;
 }
 
 
@@ -599,7 +624,7 @@ int main() {
 
         case 1: {
             string username, password;
-            cout << "Nom d'utilisateur: ";
+            cout << "Nom d'Admin: ";
             cin >> username;
             cout << "Mot de passe: ";
             cin >> password;
@@ -628,29 +653,66 @@ int main() {
 							 admin->supprimerVille(cities);
                         }
                         break;
-                    case 2:
-                         //admin->creerAeroport(airports);
+                    case 2: {
+                        // Menu Administrateur: Gérer les aéroports
+                        int choixAeroport;
+                        cout << "Menu Gerer les aeroports :" << endl;
+                        cout << "1. Afficher les aeroports existants" << endl;
+                        cout << "2. Ajouter un nouvel aeroport" << endl;
+                        cout << "3. Retour au menu principal" << endl;
+                        cout << "-------------------------------------" << endl;
+
+                        cout << "Votre choix: ";
+                        cin >> choixAeroport;
+
+                        switch (choixAeroport) {
+                        case 1:
+                            // Afficher les aéroports existants
+                            cout << "Aeroports existants :" << endl;
+                            for (const auto& airport : airports) {
+                                cout << airport.getName() << endl; // Use the getName() member function to retrieve the name
+                            }
+                            break;
+                        case 2: {
+                            // Ajouter un nouvel aéroport
+                            fillAirports(airports, cities);
+                            cout << "Nouvel aeroport ajoute avec succes." << endl;
+                            break;
+                        }
+                        case 3:
+                            // Retour au menu principal
+                            break;
+                        default:
+                            cout << "Option invalide. Veuillez reessayer." << endl;
+                            break;
+                        }
+                        break;
+                    }
+                        break;
+
+
                         break;
                     case 3:
-                        // admin->creerAvion(aircrafts);
+                        admin->creerAvion(aircrafts);
                         break;
+                        
                     case 4:
-                        // remplir
+                        admin->displayFlights(flights);
                         break;
                     case 5:
                         Admin::displayAdmins(admins);
                         break;
                     case 6:
-                        cout << "Déconnexion réussie." << endl;
+                        cout << "Deconnexion reussie." << endl;
                         choixAdmin = 0; // Pour sortir de la boucle
                         break;
                     default:
-                        cout << "Option invalide. Veuillez réessayer." << endl;
+                        cout << "Option invalide. Veuillez reessayer." << endl;
                     }
                 } while (choixAdmin != 0);
             }
             else {
-                cout << "Identifiants incorrects, veuillez réessayer." << endl;
+                cout << "Identifiants incorrects, veuillez reessayer." << endl;
             }
             break;
         }
@@ -659,7 +721,7 @@ int main() {
             int choixClient;
             cout << "Choisissez une option :" << endl;
             cout << "1. Se connecter" << endl;
-            cout << "2. Créer un compte" << endl;
+            cout << "2. Creer un compte" << endl;
             cout << "Votre choix: ";
             cin >> choixClient;
 
@@ -673,13 +735,13 @@ int main() {
                 cin >> enteredPassword;
                 for (auto& client : clients) {
                     if (client.getEmail() == enteredEmail && client.getPassword() == enteredPassword) {
-                        cout << "Connexion réussie." << endl;
+                        cout << "Connexion reussie." << endl;
                         // Gérer les actions du client connecté
                         client.handleActions(flights);
                         return 0; // Sortir du programme après traitement
                     }
                 }
-                cout << "Identifiants incorrects. Connexion échouée." << endl;
+                cout << "Identifiants incorrects. Connexion echouee." << endl;
 				break;
 			}
             case 2: {
@@ -690,7 +752,7 @@ int main() {
                 break;
             }
             default:
-                cout << "Choix invalide. Veuillez réessayer." << endl;
+                cout << "Choix invalide. Veuillez reessayer." << endl;
                 break;
             }
         }
