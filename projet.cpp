@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
-
+#include <iomanip>
 using namespace std;
 
 // Reservation class
@@ -337,12 +337,15 @@ public:
 // Admin class
 class Admin {
 private:
+    static int lastId; 
     int id;
     string nom;
 	string password;
 
 public:
-    Admin(const string& u, const string& p) : nom(u), password(p) {}
+    Admin(const string& u, const string& p) : nom(u), password(p) {
+		id = ++lastId;
+    }
     string getNom() const {
 		return nom;
 	}
@@ -388,12 +391,21 @@ public:
     }
 
     void afficherVilles(vector<City>& cities) {
-        // Afficher les villes existantes
+        // Vérifier si des villes sont disponibles
+        if (cities.empty()) {
+            cout << "Aucune ville disponible." << endl;
+            return;
+        }
+
+        // Afficher les villes existantes sous forme de tableau centré
         cout << "Villes disponibles:" << endl;
+        cout << setw(10) << "Index" << setw(20) << "Nom de la ville" << endl;
+        cout << setfill('-') << setw(30) << "" << setfill(' ') << endl; // Ligne de séparation
         for (int i = 0; i < cities.size(); ++i) {
-            cout << i + 1 << ". " << cities[i].getName() << endl;
+            cout << setw(10) << i + 1 << setw(20) << cities[i].getName() << endl;
         }
     }
+
 	void supprimerVille(vector<City>& cities) {
 		afficherVilles(cities);
 		int index;
@@ -522,6 +534,8 @@ public:
     }
 };
 
+int Admin::lastId = 0;
+
 // Main Menu function
 void afficherMenuPrincipal() {
     cout << "Bienvenue!" << endl;
@@ -605,6 +619,7 @@ int main() {
     vector<Flight> flights;
 	vector<Client> clients;
 	vector<Admin> admins;
+
     // Créer une instance 
     fillCities(cities);
     fillAirports(airports,cities);
@@ -638,9 +653,7 @@ int main() {
                     switch (choixAdmin) {
                     case 1:
                         int chois_ville;
-						cout << "1. Ajouter les ville" << endl;
-						cout << "2. Modifier une ville" << endl;
-						cout << "3. Supprimer une ville" << endl;
+						cout << "1. Ajouter les ville | 2. Modifier une ville | 3. Supprimer une ville | 4.afficher villes" <<endl;
 						cin >> chois_ville;
                         switch (chois_ville) {
 						case 1:
@@ -651,46 +664,14 @@ int main() {
 							break;
 						case 3:
 							 admin->supprimerVille(cities);
+							 break;
+                        case 4:
+							admin->afficherVilles(cities);
+							break;
                         }
                         break;
-                    case 2: {
-                        // Menu Administrateur: Gérer les aéroports
-                        int choixAeroport;
-                        cout << "Menu Gerer les aeroports :" << endl;
-                        cout << "1. Afficher les aeroports existants" << endl;
-                        cout << "2. Ajouter un nouvel aeroport" << endl;
-                        cout << "3. Retour au menu principal" << endl;
-                        cout << "-------------------------------------" << endl;
-
-                        cout << "Votre choix: ";
-                        cin >> choixAeroport;
-
-                        switch (choixAeroport) {
-                        case 1:
-                            // Afficher les aéroports existants
-                            cout << "Aeroports existants :" << endl;
-                            for (const auto& airport : airports) {
-                                cout << airport.getName() << endl; // Use the getName() member function to retrieve the name
-                            }
-                            break;
-                        case 2: {
-                            // Ajouter un nouvel aéroport
-                            fillAirports(airports, cities);
-                            cout << "Nouvel aeroport ajoute avec succes." << endl;
-                            break;
-                        }
-                        case 3:
-                            // Retour au menu principal
-                            break;
-                        default:
-                            cout << "Option invalide. Veuillez reessayer." << endl;
-                            break;
-                        }
-                        break;
-                    }
-                        break;
-
-
+                    case 2:
+                         //admin->creerAeroport(airports);
                         break;
                     case 3:
                         admin->creerAvion(aircrafts);
